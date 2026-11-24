@@ -1,0 +1,99 @@
+import csv
+
+def csv_to_dict (file_name: str, key_column: str, value_column: str):
+    #INPUT: a csv file, a key column title, and a value column title
+    #OUTPUT: a dictionary mapping the keys to the values
+    
+    #create an empty dictionary
+    result = {}
+    
+    #open the csv file and read through all the lines
+    file = open(file_name, mode = "r", newline = "")
+    reader = csv.DictReader(file)
+    
+    #for each row in the reader, it will take a key and value and add it to the dictionary (also it will strip the $ for the prices csv)
+    for row in reader:
+        key = row[key_column]
+        val = row[value_column]
+        result[key] = val
+    
+    #close the file and return the dictionary
+    file.close()
+        
+    return result
+
+account_file = "account_info_file.csv"
+
+#loop over options to log in
+
+menu_choice = 'Y'
+while(menu_choice != 'C'):
+    
+    menu = """
+    A = Create new account
+    B = Log into an existing account
+    C = Cancel
+    Enter your choice: 
+    """
+    
+    #have the user choose to make a new account or log into a new one
+    menu_choice = input(menu)
+    
+    #make the account info csv into a dictionary
+    username_list = csv_to_dict(account_file, "username", "password")
+    
+    #if they want to create a new account
+    if(menu_choice == 'A'):
+        #the user enters a username
+        username = input("Please enter a username: ")
+        
+        #loop until the user gives a username that hasnt been given before
+        while(username in username_list):
+            print("Username already taken, please try again")
+            username = input("Please enter a username: ")
+            
+        #once the username is verified, the user gives a password
+        password = input("Please enter a password: ")
+        
+        #add both the username and password into the account info csv
+        new_row = [username, password]
+        file = open(account_file, mode = "a", newline = "")
+        writer = csv.writer(file)
+        writer.writerow(new_row)   
+        file.close()
+        
+        #let the user know their account was created
+        print("Account creation was successful! You're now in your account")
+        
+        #make menu_choice 'C' so that the loop ends
+        menu_choice = 'C'        
+        
+    elif(menu_choice == 'B'):
+        #let them enter a username
+        username = input("Please enter your username: ")
+        
+        #loop until they choose a username that exists
+        while(username not in username_list):
+            print("Invalid username, please try again")
+            username = input("Please enter your username: ")
+        
+        #once they get the right username, get their password
+        password = input("Please enter your password: ")
+        
+        #if the password is wrong, loop until they give the correct password or until they give up
+        exit = 'N'
+        while((password != username_list[username]) and (exit != 'Y')):
+            exit = input("Incorrect password, would you like to try again (Y/N)? ")
+            if(exit == 'Y'):
+                password = input("Please enter your password: ")
+        
+        print("Log-in sucessful!")
+        
+        #make menu_choice 'C' so that the loop ends
+        menu_choice = 'C'
+        
+    elif(menu_choice != 'C'):
+            print("Invalid choice, please try again")
+    
+    else:
+        print("You exited the program")
